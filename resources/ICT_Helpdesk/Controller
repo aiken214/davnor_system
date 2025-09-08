@@ -1,0 +1,156 @@
+// app/Http/Controllers/TicketController.php
+
+namespace App\Http\Controllers;
+
+use App\Models\Ticket;
+use App\Models\TicketCategory;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class TicketController extends Controller
+{
+    public function index()
+    {
+        $tickets = Ticket::with(['category', 'user', 'assignedTo'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return Inertia::render('Tickets/Index', [
+            'tickets' => $tickets,
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Tickets/Create', [
+            'categories' => TicketCategory::all(),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'category_id' => 'required|exists:ticket_categories,id',
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string',
+            'priority' => 'required|in:low,medium,high,urgent',
+        ]);
+
+        $ticket = Ticket::create([
+            'user_id' => auth()->id(),
+            'category_id' => $request->category_id,
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'priority' => $request->priority,
+        ]);
+
+        return redirect()->route('tickets.show', $ticket);
+    }
+
+    public function show(Ticket $ticket)
+    {
+        $ticket->load(['comments.user', 'attachments', 'logs', 'category', 'user', 'assignedTo']);
+
+        return Inertia::render('Tickets/Show', [
+            'ticket' => $ticket,
+        ]);
+    }
+
+    public function update(Request $request, Ticket $ticket)
+    {
+        $request->validate([
+            'status' => 'required|in:open,in_progress,resolved,closed',
+            'assigned_to' => 'nullable|exists:users,id',
+        ]);
+
+        $ticket->update($request->only('status', 'assigned_to'));
+
+        return back();
+    }
+
+    public function destroy(Ticket $ticket)
+    {
+        $ticket->delete();
+        return redirect()->route('tickets.index');
+    }
+}
+
+// app/Http/Controllers/TicketCommentController.php
+
+namespace App\Http\Controllers;
+
+use App\Models\Ticket;
+use App\Models\TicketComment;
+use Illuminate\Http\Request;
+
+class TicketCommentController extends Controller
+{
+    public function store(Request $request, Ticket $ticket)
+    {
+        $request->validate([
+            'message' => 'required|string'
+        ]);
+
+        $ticket->comments()->create([
+            'user_id' => auth()->id(),
+            'message' => $request->message,
+        ]);
+
+        return redirect()->route('tickets.show', $ticket);
+    }
+}
+
+// app/Http/Controllers/TicketAttachmentController.php
+
+namespace App\Http\Controllers;
+
+use App\Models\Ticket;
+use App\Models\TicketComment;
+use App\Models\TicketAttachment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class TicketAttachmentController extends Controller
+{
+    public function store(Request $request, Ticket $ticket)
+    {
+        $request->validate([
+            'file' => 'required|file|max:10240',
+            'comment_id' => 'nullable|exists:ticket_comments,id'
+        ]);
+
+        $path = $request->file('file')->store('attachments', 'public');
+
+        TicketAttachment::create([
+            'ticket_id' => $ticket->id,
+            'comment_id' => $request->comment_id,
+            'file_path' => $path,
+            'file_name' => $request->file('file')->getClientOriginalName(),
+            'uploaded_by' => auth()->id(),
+            'uploaded_at' => now(),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function download(TicketAttachment $attachment)
+    {
+        return Storage::disk('public')->download($attachment->file_path, $attachment->file_name);
+    }
+}
+
+// routes/web.php
+
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketCommentController;
+use App\Http\Controllers\TicketAttachmentController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('tickets', TicketController::class);
+    Route::post('/tickets/{ticket}/comments', [TicketCommentController::class, 'store'])
+        ->name('tickets.comments.store');
+    Route::post('/tickets/{ticket}/attachments', [TicketAttachmentController::class, 'store'])
+        ->name('tickets.attachments.store');
+    Route::get('/attachments/{attachment}/download', [TicketAttachmentController::class, 'download'])
+        ->name('tickets.attachments.download');
+});

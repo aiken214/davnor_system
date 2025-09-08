@@ -1,0 +1,206 @@
+// ================================
+// 1. MIGRATIONS
+// ================================
+
+// database/migrations/create_tickets_table.php
+Schema::create('tickets', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
+    $table->foreignId('assigned_to_id')->nullable()->constrained('users')->nullOnDelete();
+    $table->string('subject');
+    $table->text('description');
+    $table->enum('priority', ['low', 'medium', 'high'])->default('low');
+    $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
+    $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+    $table->timestamps();
+});
+
+Schema::create('ticket_comments', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
+    $table->text('comment');
+    $table->timestamps();
+});
+
+Schema::create('ticket_attachments', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
+    $table->string('filename');
+    $table->string('filepath');
+    $table->timestamps();
+});
+
+Schema::create('categories', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->timestamps();
+});
+
+
+// ================================
+// 2. MODELS
+// ================================
+
+// app/Models/Ticket.php
+class Ticket extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id', 'assigned_to_id', 'subject', 'description', 'priority', 'status', 'category_id'
+    ];
+
+    public function user() { return $this->belongsTo(User::class); }
+    public function assignee() { return $this->belongsTo(User::class, 'assigned_to_id'); }
+    public function category() { return $this->belongsTo(Category::class); }
+    public function comments() { return $this->hasMany(TicketComment::class); }
+    public function attachments() { return $this->hasMany(TicketAttachment::class); }
+}
+
+// app/Models/TicketComment.php
+class TicketComment extends Model
+{
+    protected $fillable = ['ticket_id', 'user_id', 'comment'];
+    public function user() { return $this->belongsTo(User::class); }
+    public function ticket() { return $this->belongsTo(Ticket::class); }
+}
+
+// app/Models/TicketAttachment.php
+class TicketAttachment extends Model
+{
+    protected $fillable = ['ticket_id', 'filename', 'filepath'];
+    public function ticket() { return $this->belongsTo(Ticket::class); }
+}
+
+// app/Models/Category.php
+class Category extends Model
+{
+    protected $fillable = ['name'];
+    public function tickets() { return $this->hasMany(Ticket::class); }
+}
+
+
+// ================================
+// 3. CONTROLLERS
+// ================================
+
+// TicketController.php (main logic)
+
+public function store(Request $request) {
+    $data = $request->validate([
+        'subject' => 'required|string',
+        'description' => 'required',
+        'priority' => 'required',
+        'category_id' => 'nullable|exists:categories,id',
+    ]);
+    $data['user_id'] = auth()->id();
+    $ticket = Ticket::create($data);
+
+    if ($request->hasFile('attachments')) {
+        foreach ($request->file('attachments') as $file) {
+            $path = $file->store('attachments');
+            $ticket->attachments()->create([
+                'filename' => $file->getClientOriginalName(),
+                'filepath' => $path,
+            ]);
+        }
+    }
+
+    return redirect()->route('tickets.index');
+}
+
+public function assign(Request $request, Ticket $ticket) {
+    $ticket->update(['assigned_to_id' => $request->user_id]);
+    $ticket->assignee->notify(new TicketAssigned($ticket));
+    broadcast(new TicketUpdated($ticket))->toOthers();
+    return back();
+}
+
+public function updateStatus(Request $request, Ticket $ticket) {
+    $ticket->update(['status' => $request->status]);
+    $ticket->user->notify(new TicketStatusChanged($ticket));
+    broadcast(new TicketUpdated($ticket))->toOthers();
+    return back();
+}
+
+// TicketCommentController.php
+public function store(Request $request, Ticket $ticket) {
+    $comment = $ticket->comments()->create([
+        'user_id' => auth()->id(),
+        'comment' => $request->comment,
+    ]);
+    broadcast(new NewComment($ticket, $comment))->toOthers();
+    return back();
+}
+
+
+// ================================
+// 4. NOTIFICATIONS (TicketStatusChanged.php)
+// ================================
+
+public function via($notifiable) {
+    return ['mail', 'database'];
+}
+
+public function toMail($notifiable) {
+    return (new MailMessage)
+        ->subject('Ticket Status Updated')
+        ->line("Ticket #{$this->ticket->id} is now {$this->ticket->status}.")
+        ->action('View Ticket', url("/tickets/{$this->ticket->id}"));
+}
+
+public function toArray($notifiable) {
+    return [
+        'ticket_id' => $this->ticket->id,
+        'status' => $this->ticket->status,
+    ];
+}
+
+
+// ================================
+// 5. FRONTEND (React/Inertia sample ticket create form)
+// ================================
+
+<form onSubmit={handleSubmit} encType="multipart/form-data">
+  <Input name="subject" value={data.subject} onChange={handleChange} />
+  <Textarea name="description" value={data.description} onChange={handleChange} />
+  <select name="priority" value={data.priority} onChange={handleChange}>
+    <option value="low">Low</option>
+    <option value="medium">Medium</option>
+    <option value="high">High</option>
+  </select>
+  <Input type="file" name="attachments[]" multiple onChange={handleFileChange} />
+  <Button type="submit">Create</Button>
+</form>
+
+
+// ================================
+// 6. EVENT + BROADCAST (TicketUpdated.php)
+// ================================
+
+class TicketUpdated implements ShouldBroadcast
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public $ticket;
+    public function __construct(Ticket $ticket) {
+        $this->ticket = $ticket;
+    }
+
+    public function broadcastOn() {
+        return new PrivateChannel('tickets.' . $this->ticket->id);
+    }
+}
+
+
+// ================================
+// 7. Routes (web.php)
+// ================================
+
+Route::middleware('auth')->group(function () {
+    Route::resource('tickets', TicketController::class);
+    Route::post('/tickets/{ticket}/comments', [TicketCommentController::class, 'store']);
+    Route::post('/tickets/{ticket}/assign', [TicketController::class, 'assign']);
+    Route::post('/tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
+});

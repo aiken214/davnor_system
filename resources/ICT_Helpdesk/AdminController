@@ -1,0 +1,16 @@
+//In TicketController@adminIndex or similar:
+
+$tickets = Ticket::query()
+    ->with(['user', 'category'])
+    ->when(request('status'), fn($q) => $q->where('status', request('status')))
+    ->when(request('priority'), fn($q) => $q->where('priority', request('priority')))
+    ->when(request('category_id'), fn($q) => $q->where('category_id', request('category_id')))
+    ->latest()->get();
+
+$categories = TicketCategory::all();
+
+return Inertia::render('Tickets/AdminDashboard', [
+    'tickets' => $tickets,
+    'filters' => request()->only('status', 'priority', 'category_id'),
+    'categories' => $categories,
+]);
