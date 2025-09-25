@@ -25,6 +25,7 @@ class School extends Model
         'district_id',
         'address',
         'school_head',
+        'position',
         'contact_number',
         'email',
         'created_at',
