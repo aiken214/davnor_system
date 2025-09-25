@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('district_id')->nullable();
             $table->string('address')->nullable();
             $table->string('school_head')->nullable();
+            $table->string('position')->nullable();
             $table->string('contact_number')->nullable();
             $table->string('email')->nullable();
             $table->timestamps();
