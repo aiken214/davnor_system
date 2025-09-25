@@ -20,13 +20,14 @@ class OpcrController extends Controller
      */
     public function index(Request $request) 
     {
-        $query = Opcr::query(); 
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        $opcrs = $query->latest()->paginate(10); // ✅ paginate from builder
+        $opcrs = Opcr::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where('title', 'like', '%' . $request->search . '%');
+            })
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10);
 
         return Inertia::render('Osds/Opcrs/Index', [
             'opcrs' => $opcrs,

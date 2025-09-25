@@ -92,62 +92,72 @@ export function AppSidebar() {
       ]
       : []),
 
-    {
-      title: 'OSDS',
-      items: [
+    ...(can('OSDS_access')
+      ? [
         {
-          title: 'ASDS',
+          title: 'OSDS',
           items: [
-            can('opcr_access') && {
-              section: null,
-              title: 'OPCRs',
-              href: '/opcrs',
-              icon: FileBadge,
+            {
+              title: 'ASDS',
+              items: [
+                can('opcr_access') && {
+                  section: null,
+                  title: 'OPCRs',
+                  href: '/opcrs',
+                  icon: FileBadge,
+                },
+              ].filter(Boolean),
             },
-          ].filter(Boolean),
-        },
+            {
+              title: 'ICT',
+              items: [
+                can('dcp_access') && {
+                  section: null,
+                  title: 'DCPs',
+                  href: '/dcps',
+                  icon: Computer,
+                },
+                can('ict_helpdesk_access') && {
+                  section: null,
+                  title: 'ICT Helpdesk',
+                  href: '/tickets',
+                  icon: Handshake,
+                },
+                can('ict_action_plan_access') && {
+                  section: null,
+                  title: 'Action Plans',
+                  href: '#',
+                  icon: NotebookPen,
+                },
+              ].filter(Boolean),
+            },
+          ].filter(Boolean) as { section?: any; title: string; href?: string; icon?: any; items?: any[] }[],
+        }
+      ]
+      : []),
+
+    ...(can('SGOD_access')
+      ? [
         {
-          title: 'ICT',
+          title: 'SGOD',
           items: [
-            can('dcp_access') && {
+            can('sbm_checklist_access') && {
               section: null,
-              title: 'DCPs',
-              href: '/dcps',
-              icon: Computer,
+              title: 'SBM Checklists',
+              href: '/sbm-checklists',
+              icon: FileCheck,
             },
-            can('ict_helpdesk_access') && {
+            can('dmea_access') && {
               section: null,
-              title: 'ICT Helpdesk',
-              href: '/tickets',
-              icon: Handshake,
-            },
-            can('ict_action_plan_access') && {
-              section: null,
-              title: 'Action Plans',
+              title: 'DMEA',
               href: '#',
-              icon: NotebookPen,
+              icon: FileCheck,
             },
-          ].filter(Boolean),
-        },
-      ].filter(Boolean) as { section?: any; title: string; href?: string; icon?: any; items?: any[] }[],
-    },
-    {
-      title: 'SGOD',
-      items: [
-        can('sbm_checklist_access') && {
-          section: null,
-          title: 'SBM Checklists',
-          href: '/sbm-checklists',
-          icon: FileCheck,
-        },
-        can('dmea_access') && {
-          section: null,
-          title: 'DMEA',
-          href: '#',
-          icon: FileCheck,
-        },
-      ].filter(Boolean) as { section: any; title: string; href: string; icon: any }[],
-    },
+          ].filter(Boolean) as { section: any; title: string; href: string; icon: any }[],
+        }
+      ]
+      : []),
+
   ];
 
   const footerNavItems = [

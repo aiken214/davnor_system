@@ -29,6 +29,7 @@ interface School {
     name: string;
     depedsch_id: number;
     address: string;
+    school_head: string;
     contact_number: number;
     email: string;
     district_id: number;
@@ -39,6 +40,7 @@ export default function SchoolEdit({ school, districts }: { school: School; dist
         name: string;
         depedsch_id: number | '';
         address: string;
+        school_head: string;
         contact_number: number | '';
         email: string;
         district_id: string;
@@ -46,6 +48,7 @@ export default function SchoolEdit({ school, districts }: { school: School; dist
         name: school.name,
         depedsch_id: school.depedsch_id,
         address: school.address,
+        school_head: school.school_head,
         contact_number: school.contact_number,
         email: school.email,
         district_id: school.district_id.toString(),
@@ -123,6 +126,34 @@ export default function SchoolEdit({ school, districts }: { school: School; dist
                                     <InputError message={errors.address} />
                                 </div>
 
+                                {/* Email */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">School Email</Label>
+                                    <Input
+                                        type="email"
+                                        id="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        placeholder="Enter email"
+                                        aria-invalid={!!errors.email}
+                                    />
+                                    <InputError message={errors.email} />
+                                </div>
+
+                                {/* School Head */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="school_head">School Head</Label>
+                                    <Input
+                                        type="text"
+                                        id="school_head"
+                                        value={data.school_head}
+                                        onChange={(e) => setData('school_head', e.target.value)}
+                                        placeholder="Enter name of school head"
+                                        aria-invalid={!!errors.school_head}
+                                    />
+                                    <InputError message={errors.school_head} />
+                                </div>
+
                                 {/* Contact Number */}
                                 <div className="space-y-2">
                                     <Label htmlFor="contact_number">Contact Number</Label>
@@ -135,20 +166,6 @@ export default function SchoolEdit({ school, districts }: { school: School; dist
                                         aria-invalid={!!errors.contact_number}
                                     />
                                     <InputError message={errors.contact_number} />
-                                </div>
-
-                                {/* Email */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        type="email"
-                                        id="email"
-                                        value={data.email}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        placeholder="Enter email"
-                                        aria-invalid={!!errors.email}
-                                    />
-                                    <InputError message={errors.email} />
                                 </div>
 
                                 {/* District Dropdown with optgroup */}

@@ -40,6 +40,7 @@ interface SchoolType {
     name: string;
     depedsch_id: number;
     address: string;
+    school_head: string;
     contact_number: number;
     email: string;
     district?: {
@@ -156,8 +157,9 @@ export default function SchoolsIndex({ schools, districts }: { schools: SchoolsT
                                         <TableHead>Division</TableHead>
                                         <TableHead>District</TableHead>
                                         <TableHead>Address</TableHead>
+                                        <TableHead>School Email</TableHead>
+                                        <TableHead>School Head</TableHead>
                                         <TableHead>Contact No.</TableHead>
-                                        <TableHead>Email</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -170,8 +172,9 @@ export default function SchoolsIndex({ schools, districts }: { schools: SchoolsT
                                             <TableCell>{school.district?.division?.name ?? '—'}</TableCell>
                                             <TableCell>{school.district?.name}</TableCell>
                                             <TableCell>{school.address}</TableCell>
-                                            <TableCell>{school.contact_number}</TableCell>
                                             <TableCell>{school.email}</TableCell>
+                                            <TableCell>{school.school_head}</TableCell>
+                                            <TableCell>{school.contact_number}</TableCell>
                                             <TableCell className="w-50 space-x-1">
 
                                                 <Button asChild size="sm" variant="secondary">

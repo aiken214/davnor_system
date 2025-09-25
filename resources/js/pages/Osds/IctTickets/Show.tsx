@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -124,6 +124,7 @@ function AttachmentModal({ file }: { file: any }) {
                 </DialogTrigger>
             </div>
             <DialogContent className="!max-w-[80vw] !w-[80vw] !h-[90vh] !p-0 flex flex-col overflow-hidden">
+                <DialogTitle>View File</DialogTitle>
                 <div className="flex items-center justify-between px-4 py-2 border-b bg-white">
                     <h2 className="text-base font-semibold">Preview</h2>
                     <DialogClose asChild>

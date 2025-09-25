@@ -29,6 +29,7 @@ export default function SchoolCreate({ districts }: { districts: District[] }) {
         name: string;
         depedsch_id: number | '';
         address: string;
+        school_head: string;
         contact_number: number | '';
         email: string;
         district_id: string;
@@ -36,6 +37,7 @@ export default function SchoolCreate({ districts }: { districts: District[] }) {
         name: '',
         depedsch_id: '',
         address: '',
+        school_head: '',
         contact_number: '',
         email: '',
         district_id: '',
@@ -113,6 +115,35 @@ export default function SchoolCreate({ districts }: { districts: District[] }) {
                                     <InputError message={errors.address} />
                                 </div>
 
+                                {/* Email */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">School Email</Label>
+                                    <Input
+                                        type="email"
+                                        id="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        placeholder="Enter email"
+                                        aria-invalid={!!errors.email}
+                                    />
+                                    <InputError message={errors.email} />
+                                </div>
+
+
+                                {/* School Headr */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="school_head">School Head</Label>
+                                    <Input
+                                        type="text"
+                                        id="school_head"
+                                        value={data.school_head}
+                                        onChange={(e) => setData('school_head', e.target.value)}
+                                        placeholder="Enter name of school head"
+                                        aria-invalid={!!errors.school_head}
+                                    />
+                                    <InputError message={errors.school_head} />
+                                </div>
+
                                 {/* Contact Number */}
                                 <div className="space-y-2">
                                     <Label htmlFor="contact_number">Contact Number</Label>
@@ -125,20 +156,6 @@ export default function SchoolCreate({ districts }: { districts: District[] }) {
                                         aria-invalid={!!errors.contact_number}
                                     />
                                     <InputError message={errors.contact_number} />
-                                </div>
-
-                                {/* Email */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        type="email"
-                                        id="email"
-                                        value={data.email}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        placeholder="Enter email"
-                                        aria-invalid={!!errors.email}
-                                    />
-                                    <InputError message={errors.email} />
                                 </div>
 
                                 {/* District Dropdown with optgroup */}

@@ -24,6 +24,7 @@ class School extends Model
         'depedsch_id',
         'district_id',
         'address',
+        'school_head',
         'contact_number',
         'email',
         'created_at',

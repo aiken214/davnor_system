@@ -19,13 +19,13 @@ class SbmChecklistController extends Controller
     {
         abort_unless(auth()->user()->can('sbm_checklist_access'), Response::HTTP_FORBIDDEN, 'User does not have the right permissions.');
 
-        $query = SbmChecklist::query(); 
-
-        if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
-        }
-
-        $sbm_checklists = $query->latest()->paginate(10); // ✅ paginate from builder
+        $sbm_checklists = SbmChecklist::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $query->where('title', 'like', '%' . $request->search . '%');
+            })
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10);
 
         return Inertia::render('Sgod/SbmChecklists/Index', [
             'sbm_checklists' => $sbm_checklists,
