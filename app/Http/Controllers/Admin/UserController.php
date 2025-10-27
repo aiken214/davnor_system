@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
+use App\Imports\UsersImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -130,5 +132,16 @@ class UserController extends Controller
         User::destroy($id);
 
         return to_route("users.index");
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        Excel::import(new UsersImport, $request->file('file'));
+
+        return back()->with('success', 'Users imported successfully!');
     }
 }

@@ -22,6 +22,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { can } from '@/lib/can';
+import ImportUsersModal from '@/pages/Users/ImportUsersModal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -102,14 +103,18 @@ export default function UsersIndex({ users }: { users: UsersType }) {
                                 <Search size={16} aria-hidden="true" />
                             </div>
                         </div>
+                        <div className="flex justify-right gap-1">
 
-                        {can('user_create') && (
-                            <Button asChild>
-                                <Link href="/users/create" prefetch>
-                                    Create User
-                                </Link>
-                            </Button>
-                        )}
+                            <ImportUsersModal />
+
+                            {can('user_create') && (
+                                <Button asChild>
+                                    <Link href="/users/create" prefetch>
+                                        Create Users
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
                     </div>
 
                     <Card>

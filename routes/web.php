@@ -36,7 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:Super_Admin|Admin')->group(function () {
-        Route::resource('users', UserController::class);    
+        Route::resource('users', UserController::class);   
+        Route::post('/users/import', [UserController::class, 'import'])->name('users.import'); 
         Route::resource('schools', SchoolController::class);    
         Route::resource('divisions', DivisionController::class);
         Route::resource('districts', DistrictController::class);
