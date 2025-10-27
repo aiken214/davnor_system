@@ -97,39 +97,29 @@ export function AppSidebar() {
         {
           title: 'OSDS',
           items: [
-            {
-              title: 'ASDS',
-              items: [
-                can('opcr_access') && {
-                  section: null,
-                  title: 'OPCRs',
-                  href: '/opcrs',
-                  icon: FileBadge,
-                },
-              ].filter(Boolean),
+            can('opcr_access') && {
+              section: null,
+              title: 'OPCRs',
+              href: '/opcrs',
+              icon: FileBadge,
             },
-            {
-              title: 'ICT',
-              items: [
-                can('dcp_access') && {
-                  section: null,
-                  title: 'DCPs',
-                  href: '/dcps',
-                  icon: Computer,
-                },
-                can('ict_helpdesk_access') && {
-                  section: null,
-                  title: 'ICT Helpdesk',
-                  href: '/tickets',
-                  icon: Handshake,
-                },
-                can('ict_action_plan_access') && {
-                  section: null,
-                  title: 'Action Plans',
-                  href: '#',
-                  icon: NotebookPen,
-                },
-              ].filter(Boolean),
+            can('dcp_access') && {
+              section: null,
+              title: 'DCPs',
+              href: '/dcps',
+              icon: Computer,
+            },
+            can('ict_helpdesk_access') && {
+              section: null,
+              title: 'ICT Helpdesk',
+              href: '/tickets',
+              icon: Handshake,
+            },
+            can('ict_action_plan_access') && {
+              section: null,
+              title: 'Action Plans',
+              href: '#',
+              icon: NotebookPen,
             },
           ].filter(Boolean) as { section?: any; title: string; href?: string; icon?: any; items?: any[] }[],
         }
