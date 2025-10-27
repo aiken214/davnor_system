@@ -31,7 +31,7 @@ class SchoolSeeder extends Seeder
 
         foreach ($data as $school) {
             School::updateOrCreate(
-                ['depedsch_id' => $school['depedsch_id']], // only the unique field here
+                
                 [
                     'name'           => $school['name'],
                     'district_id'    => $school['district_id'] ?: null,
